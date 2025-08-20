@@ -4,10 +4,10 @@ import {
   AnimatePresence, 
   useMotionValue, 
   useSpring, 
-  NativeAnimationExtended
+  
 } from "framer-motion";
 import "./App.css";
-import SparkleBackground from "./SparkleBackground";
+
 import Seafood from "./pages/Seafood";
 const navLinks = ["Home", "Menu", "Blog", "Shop", "Contact Us"];
 

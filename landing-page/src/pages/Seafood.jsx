@@ -4,9 +4,9 @@ const Seafood = () => {
   return (
     <div className="relative bg-gray-50 min-h-screen flex items-center justify-center overflow-hidden py-12">
       {/* Enhanced Background Design */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-8 overflow-hidden">
         {/* Animated fish and bubbles */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-8 overflow-hidden">
           {/* Animated fish */}
           <div className="absolute top-1/4 left-1/4 w-12 h-8 opacity-30 animate-swim">
             <svg viewBox="0 0 100 50" className="w-full h-full fill-blue-300">
@@ -34,7 +34,7 @@ const Seafood = () => {
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
         
         {/* Subtle wave pattern overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-repeat-x opacity-10" style={{
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-repeat-x opacity-0" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z' fill='%23f97316'%3E%3C/path%3E%3C/svg%3E")`,
           backgroundSize: '1200px 24px'
         }}></div>
@@ -60,7 +60,7 @@ const Seafood = () => {
             <div className="relative group">
               <div className="absolute -inset-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
               <img
-                src="https://images.unsplash.com/photo-1559737558-2f6aeff22611?ixlib=rb-4.0.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTB8fHNlYWZvb2QlMjBkaXNofGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                src="https://content.jdmagicbox.com/v2/comp/bangalore/l8/080pxx80.xx80.210928234942.d5l8/catalogue/lobster-restaurant-kammanahalli-bangalore-restaurants-1glvn40b6a.jpg"
                 alt="Gourmet Seafood Dish"
                 className="relative rounded-2xl shadow-lg w-full h-96 object-cover transform group-hover:scale-105 transition duration-300"
               />
