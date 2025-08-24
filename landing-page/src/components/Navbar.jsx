@@ -70,10 +70,10 @@ const Navbar = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage, se
         <motion.div
           whileHover={{ scale: 1.05 }}
           className="text-xl md:text-2xl font-extrabold tracking-widest text-orange-500 select-none cursor-pointer"
-          onClick={() => {
-            if (setRoute) setRoute("home");
-            if (setCurrentPage) setCurrentPage(0);
-          }}
+                     onClick={() => {
+             if (setRoute) setRoute("home");
+             if (setCurrentPage) setCurrentPage(0);
+           }}
         >
           WELLFOOD
         </motion.div>
@@ -114,6 +114,11 @@ const Navbar = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage, se
                               onClick={() => {
                                 setIsMenuOpen(false);
                                 if (cat === "Seafood" && onNavigate) onNavigate("seafood");
+                                // Add navigation for other categories when pages are created
+                                // if (cat === "Fried Chicken" && onNavigate) onNavigate("friedchicken");
+                                // if (cat === "Burger" && onNavigate) onNavigate("burger");
+                                // if (cat === "Grill" && onNavigate) onNavigate("grill");
+                                // if (cat === "Pizza" && onNavigate) onNavigate("pizza");
                               }}
                             >
                               {cat}

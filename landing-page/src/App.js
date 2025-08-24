@@ -387,7 +387,7 @@ function AppContent() {
           <Seafood key="seafood" onBack={() => setRoute("home")} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
         ) : route === "contact" ? (
           <Contact key="contact" currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} />
-        ) : currentPage === 0 ? (
+        ) : route === "home" || currentPage === 0 ? (
           <FirstPage key="page1" onNavigate={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
         ) : (
           <SecondPage key="page2" currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
@@ -549,7 +549,7 @@ const SecondPage = ({ currentPage, setCurrentPage, currentRoute, setRoute }) => 
     transition={{ duration: 0.8, ease: "easeInOut" }}
     className="relative min-h-screen bg-black text-white z-10"
   >
-    <Navbar onNavigate={() => {}} showLoginModal={false} setShowLoginModal={() => {}} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={currentRoute} setRoute={setRoute} />
+          <Navbar onNavigate={setRoute} showLoginModal={false} setShowLoginModal={() => {}} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={currentRoute} setRoute={setRoute} />
     <div className="flex flex-col items-center justify-center px-4 py-20 pt-24">
     {/* Floating Food Illustrations */}
     <motion.img
