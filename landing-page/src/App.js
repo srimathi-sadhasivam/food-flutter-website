@@ -9,6 +9,7 @@ import {
 import "./App.css";
 
 import Seafood from "./pages/Seafood";
+import Contact from "./pages/Contact";
 import Navbar from "./components/Navbar";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 const navLinks = ["Home", "Menu", "Blog", "Shop", "Contact Us"];
@@ -384,6 +385,8 @@ function AppContent() {
       <AnimatePresence mode="wait">
         {route === "seafood" ? (
           <Seafood key="seafood" onBack={() => setRoute("home")} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
+        ) : route === "contact" ? (
+          <Contact key="contact" currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} />
         ) : currentPage === 0 ? (
           <FirstPage key="page1" onNavigate={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
         ) : (
