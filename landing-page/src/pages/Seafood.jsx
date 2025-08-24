@@ -1,8 +1,46 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
-const Seafood = () => {
+const Seafood = ({ showToast }) => {
   const menuRef = useRef(null);
   const newsletterRef = useRef(null);
+  const { user, isAuthenticated } = useAuth();
+
+  const addToCart = async (item) => {
+    if (!isAuthenticated || !user) {
+      showToast && showToast('Please login to add items to cart', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:3014/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user._id || user.id,
+          userEmail: user.email,
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: 1,
+          image: item.image
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showToast && showToast(`${item.name} added to cart successfully!`, 'success');
+      } else {
+        showToast && showToast(data.message || 'Failed to add item to cart', 'error');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      showToast && showToast('Error adding item to cart', 'error');
+    }
+  };
 
   const scrollToMenu = () => {
     menuRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -182,7 +220,15 @@ const Seafood = () => {
               <p className="text-gray-600 mb-4">Fresh salmon fillet grilled to perfection with herbs and lemon butter sauce.</p>
               <div className="flex justify-between items-center">
                 <span className="text-orange-500 font-bold text-lg">$24.99</span>
-                <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300">
+                <button 
+                  onClick={() => addToCart({
+                    id: 'salmon-001',
+                    name: 'Grilled Atlantic Salmon',
+                    price: 24.99,
+                    image: 'https://images.unsplash.com/photo-1559737558-2f6a276dce3a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                  })}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
+                >
                   Add to Cart
                 </button>
               </div>
@@ -201,7 +247,15 @@ const Seafood = () => {
               <p className="text-gray-600 mb-4">Succulent lobster meat cooked in a rich cream sauce with mushrooms and cheese.</p>
               <div className="flex justify-between items-center">
                 <span className="text-orange-500 font-bold text-lg">$38.99</span>
-                <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300">
+                <button 
+                  onClick={() => addToCart({
+                    id: 'lobster-001',
+                    name: 'Lobster Thermidor',
+                    price: 38.99,
+                    image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                  })}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
+                >
                   Add to Cart
                 </button>
               </div>
@@ -220,7 +274,15 @@ const Seafood = () => {
               <p className="text-gray-600 mb-4">Jumbo shrimp sautéed in garlic, white wine, and butter sauce over linguine.</p>
               <div className="flex justify-between items-center">
                 <span className="text-orange-500 font-bold text-lg">$22.99</span>
-                <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300">
+                <button 
+                  onClick={() => addToCart({
+                    id: 'shrimp-001',
+                    name: 'Shrimp Scampi',
+                    price: 22.99,
+                    image: 'https://images.unsplash.com/photo-1580745830016-5e7cb8f63b19?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                  })}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
+                >
                   Add to Cart
                 </button>
               </div>
@@ -239,7 +301,15 @@ const Seafood = () => {
               <p className="text-gray-600 mb-4">Traditional Spanish rice dish with shrimp, mussels, clams, and saffron.</p>
               <div className="flex justify-between items-center">
                 <span className="text-orange-500 font-bold text-lg">$28.99</span>
-                <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300">
+                <button 
+                  onClick={() => addToCart({
+                    id: 'paella-001',
+                    name: 'Seafood Paella',
+                    price: 28.99,
+                    image: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                  })}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
+                >
                   Add to Cart
                 </button>
               </div>
@@ -258,7 +328,15 @@ const Seafood = () => {
               <p className="text-gray-600 mb-4">Premium tuna steak seared rare with sesame crust and ginger-soy glaze.</p>
               <div className="flex justify-between items-center">
                 <span className="text-orange-500 font-bold text-lg">$26.99</span>
-                <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300">
+                <button 
+                  onClick={() => addToCart({
+                    id: 'tuna-001',
+                    name: 'Seared Tuna Steak',
+                    price: 26.99,
+                    image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                  })}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
+                >
                   Add to Cart
                 </button>
               </div>
@@ -277,7 +355,15 @@ const Seafood = () => {
               <p className="text-gray-600 mb-4">Beer-battered cod served with crispy fries, coleslaw, and tartar sauce.</p>
               <div className="flex justify-between items-center">
                 <span className="text-orange-500 font-bold text-lg">$18.99</span>
-                <button className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300">
+                <button 
+                  onClick={() => addToCart({
+                    id: 'fish-chips-001',
+                    name: 'Fish & Chips',
+                    price: 18.99,
+                    image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+                  })}
+                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
+                >
                   Add to Cart
                 </button>
               </div>

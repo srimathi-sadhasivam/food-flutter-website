@@ -9,7 +9,263 @@ import {
 import "./App.css";
 
 import Seafood from "./pages/Seafood";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 const navLinks = ["Home", "Menu", "Blog", "Shop", "Contact Us"];
+
+// Login/Signup Modal Component
+const LoginModal = ({ isOpen, onClose, showToast }) => {
+  const [isLogin, setIsLogin] = useState(true); // true for login, false for signup
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    phone: '',
+    address: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL;
+      const endpoint = isLogin ? '/auth/login' : '/auth/signup';
+      
+      const payload = isLogin 
+        ? { email: formData.email, password: formData.password }
+        : formData;
+
+      const response = await fetch(`${apiUrl}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSuccess(data.message);
+        
+        // Store user data in localStorage for both login and signup
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('isLoggedIn', 'true');
+        
+        setTimeout(() => {
+          onClose();
+          // Reset form
+          setFormData({
+            name: '',
+            email: '',
+            password: '',
+            phone: '',
+            address: ''
+          });
+          setSuccess('');
+          // Reload page to show logged-in state
+          window.location.reload();
+        }, 2000);
+      } else {
+        setError(data.message);
+      }
+    } catch (error) {
+      setError('Network error. Please try again.');
+    }
+
+    setLoading(false);
+  };
+
+  const resetModal = () => {
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      phone: '',
+      address: ''
+    });
+    setError('');
+    setSuccess('');
+    setIsLogin(true);
+  };
+
+  const handleClose = () => {
+    resetModal();
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+        onClick={handleClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">
+              {isLogin ? 'Welcome Back!' : 'Join WellFood'}
+            </h2>
+            <button
+              onClick={handleClose}
+              className="text-gray-500 hover:text-gray-700 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-orange-100 border border-orange-300 text-orange-700 rounded-lg text-sm">
+              {success}
+            </div>
+          )}
+
+          {/* Login/Signup Form */}
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4 mb-6">
+              {!isLogin && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-black"
+                    placeholder="Enter your full name"
+                    required={!isLogin}
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-black"
+                  placeholder="Enter your email address"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-black"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              {!isLogin && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number *
+                    </label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                        +91
+                      </span>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="flex-1 rounded-r-lg border border-gray-300 px-3 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none text-black"
+                        placeholder="Enter 10-digit phone number"
+                        maxLength="10"
+                        required={!isLogin}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Delivery Address
+                    </label>
+                    <textarea
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      className="w-full rounded-lg border border-gray-300 px-3 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none resize-none text-black"
+                      placeholder="Enter your delivery address (optional)"
+                      rows="3"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center mb-4"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                isLogin ? 'Sign In' : 'Create Account'
+              )}
+            </button>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-orange-500 hover:text-orange-600 font-medium"
+              >
+                {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,15 +290,28 @@ const itemVariants = {
   }
 };
 
-export default function App() {
+function AppContent() {
   const [currentPage, setCurrentPage] = useState(0);
   const [route, setRoute] = useState("home"); // "home" | "seafood"
+  const [toasts, setToasts] = useState([]);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const glowX = useSpring(mouseX, { damping: 40, stiffness: 100 });
   const glowY = useSpring(mouseY, { damping: 40, stiffness: 100 });
 
   const [ripples, setRipples] = useState([]);
+
+  // Toast notification function
+  const showToast = (message, type = 'success') => {
+    const id = Date.now();
+    const newToast = { id, message, type };
+    setToasts(prev => [...prev, newToast]);
+    
+    // Auto remove toast after 3 seconds
+    setTimeout(() => {
+      setToasts(prev => prev.filter(toast => toast.id !== id));
+    }, 3000);
+  };
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -125,26 +394,63 @@ export default function App() {
 
       <AnimatePresence mode="wait">
         {route === "seafood" ? (
-          <Seafood key="seafood" onBack={() => setRoute("home")} />
+          <Seafood key="seafood" onBack={() => setRoute("home")} showToast={showToast} />
         ) : currentPage === 0 ? (
-          <FirstPage key="page1" onNavigate={setRoute} />
+          <FirstPage key="page1" onNavigate={setRoute} showToast={showToast} />
         ) : (
           <SecondPage key="page2" />
         )}
       </AnimatePresence>
+
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        <AnimatePresence>
+          {toasts.map((toast) => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, x: 300, scale: 0.3 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 300, scale: 0.5, transition: { duration: 0.2 } }}
+              className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
+                toast.type === 'success' 
+                  ? 'bg-green-500 text-white' 
+                  : toast.type === 'error'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-blue-500 text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <p className="font-medium text-sm">{toast.message}</p>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
     </>
   );
 }
 
-const FirstPage = ({ onNavigate }) => {
+const FirstPage = ({ onNavigate, showToast }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const menuRef = useRef(null);
   const categories = ["Seafood", "Fried Chicken", "Burger", "Grill", "Pizza"];
+  const { user, isAuthenticated, logout, setOnLoginSuccess } = useAuth();
+
+  // Set up toast callback for login success
+  useEffect(() => {
+    setOnLoginSuccess(showToast);
+  }, [showToast, setOnLoginSuccess]);
 
   useEffect(() => {
     const onClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsMenuOpen(false);
+      }
+      // Close profile dropdown when clicking outside
+      if (!e.target.closest('.profile-dropdown-container')) {
+        setShowProfileDropdown(false);
       }
     };
     document.addEventListener("mousedown", onClickOutside);
@@ -272,16 +578,137 @@ const FirstPage = ({ onNavigate }) => {
             </span>
           </motion.div>
 
-          <motion.button
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 10px 25px rgba(249, 115, 22, 0.3)"
-            }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-full font-bold shadow-lg text-xs md:text-sm tracking-wider uppercase transition-colors"
-          >
-            Book Now
-          </motion.button>
+          {/* Login Button - Always visible */}
+          {!isAuthenticated && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowLoginModal(true)}
+              className="border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white px-4 py-2 rounded-full font-semibold text-xs md:text-sm tracking-wider uppercase transition-all duration-300"
+            >
+              Login
+            </motion.button>
+          )}
+
+          {/* My Account Section */}
+          <div className="relative profile-dropdown-container">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+              className="border border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white px-4 py-2 rounded-full font-semibold text-xs md:text-sm tracking-wider uppercase transition-all duration-300 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <div className="flex flex-col items-start">
+                <span>My Account</span>
+                {isAuthenticated && user && (
+                  <span className="text-xs opacity-75 normal-case font-normal">
+                    {user.phone || user.email || user.name}
+                  </span>
+                )}
+              </div>
+            </motion.button>
+
+            {/* My Account Dropdown */}
+            <AnimatePresence>
+              {showProfileDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50"
+                >
+                  {isAuthenticated && user ? (
+                    <>
+                      {/* User Info Header */}
+                      <div className="bg-gradient-to-r from-orange-500 to-yellow-500 p-4 text-white">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                            <span className="text-white text-lg font-bold">
+                              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-lg">My Account</p>
+                            <p className="text-sm opacity-90">{user?.phone || user?.email || user?.name}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Account Options */}
+                      <div className="p-2">
+                        <button className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span className="text-gray-700 font-medium">My Orders</span>
+                        </button>
+                        
+                        <button className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="text-gray-700 font-medium">Saved Addresses</span>
+                        </button>
+                        
+                        <button className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                          <span className="text-gray-700 font-medium">E-Gift Cards</span>
+                        </button>
+                        
+                        <button className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-gray-700 font-medium">FAQ's</span>
+                        </button>
+                        
+                        <button className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors flex items-center gap-3">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          <span className="text-gray-700 font-medium">Account Privacy</span>
+                        </button>
+                        
+                        <hr className="my-2" />
+                        
+                        <button
+                          onClick={() => {
+                            logout();
+                            setShowProfileDropdown(false);
+                            showToast && showToast('Logged out successfully', 'success');
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-3 text-red-600"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                          <span className="font-medium">Log Out</span>
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-4">
+                      <button
+                        onClick={() => {
+                          setShowLoginModal(true);
+                          setShowProfileDropdown(false);
+                        }}
+                        className="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition-colors font-medium"
+                      >
+                        Login / Sign Up
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </motion.nav>
 
@@ -391,9 +818,25 @@ const FirstPage = ({ onNavigate }) => {
 
         </div>
       </section>
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        showToast={showToast}
+      />
     </motion.div>
   );
 };
+
+// Main App component with AuthProvider
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
 
 const SecondPage = () => (
   <motion.div
