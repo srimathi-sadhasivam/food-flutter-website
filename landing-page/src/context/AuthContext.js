@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [onLoginSuccess, setOnLoginSuccess] = useState(null);
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3014/api';
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3017/api';
 
   // Load user from localStorage on app start
   useEffect(() => {
@@ -52,9 +52,9 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(true);
         localStorage.setItem('wellfood_user', JSON.stringify(data.user));
         
-        // Trigger success toast
+        // Trigger success toast (only if callback exists)
         if (onLoginSuccess) {
-          onLoginSuccess(`Login successful! Welcome, ${data.user.name}`, 'success');
+          onLoginSuccess(`Welcome back, ${data.user.name}!`, 'success');
         }
         
         return { success: true, user: data.user };
@@ -151,9 +151,9 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     localStorage.setItem('wellfood_user', JSON.stringify(userData));
     
-    // Trigger success toast
+    // Trigger success toast (only if callback exists)
     if (onLoginSuccess) {
-      onLoginSuccess(`Signup successful! Welcome, ${userData.name}`, 'success');
+      onLoginSuccess(`Account created successfully! Welcome, ${userData.name}!`, 'success');
     }
   };
 

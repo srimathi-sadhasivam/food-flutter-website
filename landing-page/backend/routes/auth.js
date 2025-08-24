@@ -5,9 +5,11 @@ const router = express.Router();
 // Signup endpoint
 router.post('/signup', async (req, res) => {
   try {
+    console.log('📝 Signup request received:', req.body);
     const { name, email, password, phone, address } = req.body;
     
     if (!name || !email || !password || !phone) {
+      console.log('❌ Missing required fields:', { name: !!name, email: !!email, password: !!password, phone: !!phone });
       return res.status(400).json({ 
         success: false, 
         message: 'Name, email, password, and phone are required' 
@@ -69,9 +71,11 @@ router.post('/signup', async (req, res) => {
 // Login endpoint
 router.post('/login', async (req, res) => {
   try {
+    console.log('🔐 Login request received:', req.body);
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log('❌ Missing login credentials:', { email: !!email, password: !!password });
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'

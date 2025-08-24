@@ -1,19 +1,20 @@
 import React, { useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/Navbar";
 
-const Seafood = ({ showToast }) => {
+const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCurrentPage, currentRoute, setRoute }) => {
   const menuRef = useRef(null);
   const newsletterRef = useRef(null);
   const { user, isAuthenticated } = useAuth();
 
   const addToCart = async (item) => {
     if (!isAuthenticated || !user) {
-      showToast && showToast('Please login to add items to cart', 'error');
+      setShowLoginModal(true);
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:3014/api/cart/add', {
+      const response = await fetch('http://localhost:3017/api/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,13 +33,12 @@ const Seafood = ({ showToast }) => {
       const data = await response.json();
 
       if (data.success) {
-        showToast && showToast(`${item.name} added to cart successfully!`, 'success');
+        console.log(`${item.name} added to cart successfully!`);
       } else {
-        showToast && showToast(data.message || 'Failed to add item to cart', 'error');
+        console.log(data.message || 'Failed to add item to cart');
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
-      showToast && showToast('Error adding item to cart', 'error');
     }
   };
 
@@ -51,7 +51,9 @@ const Seafood = ({ showToast }) => {
   };
 
   return (
-    <div className="relative bg-gray-50 min-h-screen overflow-hidden py-12">
+    <div className="relative bg-gray-50 min-h-screen overflow-hidden">
+      <Navbar onNavigate={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={currentRoute} setRoute={setRoute} />
+      <div className="pt-24">
       {/* Enhanced Background Design */}
       <div className="absolute inset-8 overflow-hidden">
         {/* Animated fish and bubbles */}
@@ -484,6 +486,7 @@ const Seafood = ({ showToast }) => {
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* Add CSS for animations */}
