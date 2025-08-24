@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 
-const navLinks = ["Home", "Menu", "Blog", "Shop", "Contact Us"];
+const navLinks = ["Home", "Menu", "About", "Shop", "Contact Us"];
 
 const Navbar = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage, setCurrentPage, currentRoute, setRoute }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -136,18 +136,18 @@ const Navbar = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage, se
                   transition: { duration: 0.2 }
                 }}
                 className="cursor-pointer"
-                onClick={() => {
-                  if (link === "Home") {
-                    if (setRoute) setRoute("home");
-                    if (setCurrentPage) setCurrentPage(0);
-                  } else if (link === "Blog") {
-                    if (setCurrentPage) setCurrentPage(1);
-                  } else if (link === "Shop") {
-                    if (setRoute) setRoute("shop");
-                  } else if (link === "Contact Us") {
-                    if (setRoute) setRoute("contact");
-                  }
-                }}
+                                 onClick={() => {
+                   if (link === "Home") {
+                     if (setRoute) setRoute("home");
+                     if (setCurrentPage) setCurrentPage(0);
+                   } else if (link === "About") {
+                     if (setCurrentPage) setCurrentPage(1);
+                   } else if (link === "Shop") {
+                     if (setRoute) setRoute("shop");
+                   } else if (link === "Contact Us") {
+                     if (setRoute) setRoute("contact");
+                   }
+                 }}
               >
                 {link}
               </motion.li>
