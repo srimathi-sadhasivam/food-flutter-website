@@ -8,6 +8,7 @@ html, body, #root {
 .App-logo {
   display: none;
 }
+
 .mouse-glow {
   position: fixed;
   width: 200px;
@@ -17,6 +18,7 @@ html, body, #root {
   pointer-events: none;
   z-index: 80;
 }
+
 /* Add this */
 .animated-gradient-bg {
   position: absolute;
@@ -29,6 +31,7 @@ html, body, #root {
   opacity: 0.2;
   z-index: 0;
 }
+
 @keyframes moveImage {
   0% {
     transform: translateX(-100%);
@@ -43,6 +46,7 @@ html, body, #root {
   position: relative;
   animation: moveImage 5s linear infinite;
 }
+
 @keyframes swim {
   0% { transform: translateX(0) translateY(0) rotate(0deg); }
   25% { transform: translateX(20px) translateY(-10px) rotate(5deg); }
@@ -64,10 +68,12 @@ html, body, #root {
 .animate-float { 
   animation: float 8s ease-in-out infinite; 
 }
+
 .net-pattern {
   background-image: 
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 30px 30px;
 }
+
 /* Add any custom transitions or overrides here if needed */

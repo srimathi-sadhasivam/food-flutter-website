@@ -12,6 +12,7 @@ import Seafood from "./pages/Seafood";
 import Contact from "./pages/Contact";
 import Navbar from "./components/Navbar";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { CartProvider, useCart } from "./context/CartContext";
 const navLinks = ["Home", "Menu", "Blog", "Shop", "Contact Us"];
 
 // Login/Signup Modal Component
@@ -405,6 +406,7 @@ function AppContent() {
 
 const FirstPage = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage, setCurrentPage, currentRoute, setRoute }) => {
   const { user, isAuthenticated } = useAuth();
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
 
   return (
     <motion.div
@@ -523,6 +525,103 @@ const FirstPage = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage,
         </div>
       </section>
 
+      {/* Cart Display Section */}
+      {isAuthenticated && cart.items.length > 0 && (
+        <section className="px-4 md:px-10 py-8 bg-gray-900">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-8"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Your Cart</h2>
+              <p className="text-gray-300">Items added from our menu</p>
+            </motion.div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {cart.items.map((item, index) => (
+                <motion.div
+                  key={item.productId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="bg-white rounded-lg shadow-lg overflow-hidden"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-32 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-800 mb-2">{item.name}</h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-orange-500 font-bold">${item.price}</span>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => updateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                          className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                          className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Total: ${(item.price * item.quantity).toFixed(2)}</span>
+                      <button
+                        onClick={() => removeFromCart(item.productId)}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-center mt-8"
+            >
+              <div className="bg-white rounded-lg p-6 max-w-md mx-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-semibold text-gray-800">Total Items:</span>
+                  <span className="text-orange-500 font-bold text-xl">{cart.totalItems}</span>
+                </div>
+                <div className="flex justify-between items-center mb-6">
+                  <span className="text-lg font-semibold text-gray-800">Total Amount:</span>
+                  <span className="text-orange-500 font-bold text-2xl">${cart.totalAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex space-x-4 justify-center">
+                  <button
+                    onClick={clearCart}
+                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    Clear Cart
+                  </button>
+                  <button
+                    onClick={() => onNavigate('checkout')}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    Checkout
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+      )}
+
       {/* Login Modal */}
       <LoginModal 
         isOpen={showLoginModal} 
@@ -532,11 +631,13 @@ const FirstPage = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage,
   );
 };
 
-// Main App component with AuthProvider
+// Main App component with AuthProvider and CartProvider
 export default function App() {
   return (
     <AuthProvider>
+      <CartProvider>
       <AppContent />
+      </CartProvider>
     </AuthProvider>
   );
 }
