@@ -8,7 +8,7 @@ import AdminUsers from './pages/admin/AdminUsers';
 
 const RequireAdmin = ({ children }) => {
   const { adminToken, role } = useAuth();
-  if (!(adminToken || role === 'admin')) return <Navigate to="/" replace />;
+  if (!(adminToken || role === 'admin')) return <Navigate to="/admin/login" replace />;
   return children;
 };
 

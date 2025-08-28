@@ -110,9 +110,22 @@ export const AuthProvider = ({ children }) => {
       });
       const data = await response.json();
       if (data.success && data.token) {
+        // Persist tokens and role like normal login for consistent downstream usage
         localStorage.setItem('wellfood_admin_token', data.token);
+        localStorage.setItem('wellfood_token', data.token);
+        localStorage.setItem('wellfood_role', 'admin');
+
         setAdminToken(data.token);
-        return { success: true };
+        setToken(data.token);
+        setRole('admin');
+
+        const adminUser = data.user || { role: 'admin', email };
+        setUser(adminUser);
+        setIsAuthenticated(true);
+        localStorage.setItem('wellfood_user', JSON.stringify(adminUser));
+
+        if (onLoginSuccess) onLoginSuccess(`Welcome back, Admin!`, 'success');
+        return { success: true, role: 'admin', user: adminUser };
       }
       return { success: false, message: data.message || 'Invalid credentials' };
     } catch (error) {
