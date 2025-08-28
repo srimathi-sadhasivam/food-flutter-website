@@ -4,11 +4,12 @@ import './index.css';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
+import AdminRoutes from './adminRoutes';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    {window.location.pathname.startsWith('/admin') ? <AdminRoutes /> : <App />}
   </React.StrictMode>
 );
 

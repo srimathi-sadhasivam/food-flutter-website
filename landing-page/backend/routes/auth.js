@@ -1,5 +1,7 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
+const { signToken } = require('../utils/auth');
 const router = express.Router();
 
 // Signup endpoint
@@ -28,13 +30,14 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    // Create new user
+    // Create new user (role defaults to 'user')
     const user = new User({
       name,
       email,
-      password, // In production, hash this password
+      password,
       phoneNumber: phone,
-      address: address || ''
+      address: address || '',
+      role: 'user'
     });
 
     await user.save();
@@ -48,14 +51,17 @@ router.post('/signup', async (req, res) => {
     console.log('⏰ Registration Time:', new Date().toLocaleString());
     console.log('─────────────────────────────────────');
 
+    const token = signToken({ id: user._id, role: user.role, email: user.email });
     res.json({
       success: true,
       message: 'Account created successfully!',
+      token,
       user: {
         name: user.name,
         email: user.email,
         phone: user.phoneNumber,
-        address: user.address
+        address: user.address,
+        role: user.role
       }
     });
 
@@ -92,12 +98,23 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Check password (in production, use bcrypt to compare hashed passwords)
-    if (user.password !== password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid password'
-      });
+    // Check password
+    let isMatch = false;
+    try {
+      isMatch = await bcrypt.compare(password, user.password);
+    } catch (_) {
+      isMatch = false;
+    }
+    if (!isMatch) {
+      // Fallback for legacy plaintext-stored passwords: allow once and upgrade to hash
+      if (user.password === password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        await user.save();
+        isMatch = true;
+      } else {
+        return res.status(400).json({ success: false, message: 'Invalid password' });
+      }
     }
 
     // Log login to backend console
@@ -108,14 +125,17 @@ router.post('/login', async (req, res) => {
     console.log('⏰ Login Time:', new Date().toLocaleString());
     console.log('─────────────────────────────────────');
 
+    const token = signToken({ id: user._id, role: user.role, email: user.email });
     res.json({
       success: true,
       message: 'Login successful!',
+      token,
       user: {
         name: user.name,
         email: user.email,
         phone: user.phoneNumber,
-        address: user.address
+        address: user.address,
+        role: user.role
       }
     });
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   motion, 
   AnimatePresence, 
@@ -10,10 +10,11 @@ import "./App.css";
 
 import Seafood from "./pages/Seafood";
 import Contact from "./pages/Contact";
+import About from "./pages/About";
 import Navbar from "./components/Navbar";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider, useCart } from "./context/CartContext";
-const navLinks = ["Home", "Menu", "Blog", "Shop", "Contact Us"];
+import Toast from "./components/Toast";
 
 // Login/Signup Modal Component
 const LoginModal = ({ isOpen, onClose }) => {
@@ -28,6 +29,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -45,45 +47,37 @@ const LoginModal = ({ isOpen, onClose }) => {
 
     try {
       const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3017/api';
-      const endpoint = isLogin ? '/auth/login' : '/auth/signup';
-      
-      const payload = isLogin 
-        ? { email: formData.email, password: formData.password }
-        : formData;
-
-      const response = await fetch(`${apiUrl}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setSuccess(data.message);
-        
-        // Store user data in localStorage for both login and signup
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('isLoggedIn', 'true');
-        
-        setTimeout(() => {
-          onClose();
-          // Reset form
-          setFormData({
-            name: '',
-            email: '',
-            password: '',
-            phone: '',
-            address: ''
-          });
-          setSuccess('');
-          // Reload page to show logged-in state
-          window.location.reload();
-        }, 1500);
+      if (isLogin) {
+        const res = await login(formData.email, formData.password);
+        if (res.success) {
+          if (res.role === 'admin') {
+            window.location.assign('/admin-dashboard');
+            return;
+          }
+          // user → home
+          window.location.assign('/home');
+          return;
+        } else {
+          setError(res.message || 'Login failed');
+        }
       } else {
-        setError(data.message);
+        // Signup for local user
+        const response = await fetch(`${apiUrl}/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        const data = await response.json();
+        if (data.success) {
+          setSuccess(data.message || 'Account created');
+          setTimeout(() => {
+            onClose();
+            setFormData({ name: '', email: '', password: '', phone: '', address: '' });
+            setSuccess('');
+          }, 1200);
+        } else {
+          setError(data.message || 'Signup failed');
+        }
       }
     } catch (error) {
       setError('Network error. Please try again.');
@@ -270,28 +264,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   );
 };
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-      delayChildren: 0.3
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut"
-    }
-  }
-};
+//
 
 function AppContent() {
   const [currentPage, setCurrentPage] = useState(0);
@@ -303,6 +276,17 @@ function AppContent() {
   const glowY = useSpring(mouseY, { damping: 40, stiffness: 100 });
 
   const [ripples, setRipples] = useState([]);
+
+  // Debug logging for route changes
+  useEffect(() => {
+    console.log('Route changed to:', route);
+  }, [route]);
+
+  // Create a wrapper function for setRoute with logging
+  const handleRouteChange = (newRoute) => {
+    console.log('handleRouteChange called with:', newRoute);
+    setRoute(newRoute);
+  };
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -385,13 +369,15 @@ function AppContent() {
 
       <AnimatePresence mode="wait">
         {route === "seafood" ? (
-          <Seafood key="seafood" onBack={() => setRoute("home")} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
+          <Seafood key="seafood" onNavigate={handleRouteChange} onBack={() => handleRouteChange("home")} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
         ) : route === "contact" ? (
-          <Contact key="contact" currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} />
+          <Contact key="contact" onNavigate={handleRouteChange} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} />
+        ) : route === "about" ? (
+          <About key="about" onNavigate={handleRouteChange} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} />
         ) : route === "home" || currentPage === 0 ? (
-          <FirstPage key="page1" onNavigate={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
+          <FirstPage key="page1" onNavigate={handleRouteChange} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
         ) : (
-          <SecondPage key="page2" currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
+          <SecondPage key="page2" onNavigate={handleRouteChange} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={route} setRoute={setRoute} />
         )}
       </AnimatePresence>
 
@@ -400,12 +386,15 @@ function AppContent() {
         isOpen={showLoginModal} 
         onClose={() => setShowLoginModal(false)}
       />
+
+      {/* Global Toasts */}
+      <Toast toasts={useCart().toasts} removeToast={useCart().removeToast} />
     </>
   );
 }
 
 const FirstPage = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage, setCurrentPage, currentRoute, setRoute }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
 
   return (
@@ -642,7 +631,7 @@ export default function App() {
   );
 }
 
-const SecondPage = ({ currentPage, setCurrentPage, currentRoute, setRoute }) => (
+const SecondPage = ({ onNavigate, showLoginModal, setShowLoginModal, currentPage, setCurrentPage, currentRoute, setRoute }) => (
   <motion.div
     initial={{ y: "100%" }}
     animate={{ y: 0 }}
@@ -650,7 +639,7 @@ const SecondPage = ({ currentPage, setCurrentPage, currentRoute, setRoute }) => 
     transition={{ duration: 0.8, ease: "easeInOut" }}
     className="relative min-h-screen bg-black text-white z-10"
   >
-          <Navbar onNavigate={setRoute} showLoginModal={false} setShowLoginModal={() => {}} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={currentRoute} setRoute={setRoute} />
+          <Navbar onNavigate={onNavigate} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={currentRoute} setRoute={setRoute} />
     <div className="flex flex-col items-center justify-center px-4 py-20 pt-24">
     {/* Floating Food Illustrations */}
     <motion.img

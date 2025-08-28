@@ -3,11 +3,12 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import Navbar from "../components/Navbar";
 
-const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCurrentPage, currentRoute, setRoute }) => {
+const Seafood = ({ onNavigate, onBack, showLoginModal, setShowLoginModal, currentPage, setCurrentPage, currentRoute, setRoute }) => {
   const menuRef = useRef(null);
   const newsletterRef = useRef(null);
   const { user, isAuthenticated } = useAuth();
   const { addToCart, loading } = useCart();
+  const [addedIds, setAddedIds] = useState({});
 
   const handleAddToCart = async (item) => {
     if (!isAuthenticated || !user) {
@@ -17,6 +18,10 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
 
     try {
       await addToCart(item);
+      setAddedIds((prev) => ({ ...prev, [item.id]: true }));
+      setTimeout(() => {
+        setAddedIds((prev) => ({ ...prev, [item.id]: false }));
+      }, 1500);
       console.log(`${item.name} added to cart successfully!`);
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -33,7 +38,7 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
 
   return (
     <div className="relative bg-gray-50 min-h-screen overflow-hidden">
-      <Navbar onNavigate={setRoute} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={currentRoute} setRoute={setRoute} />
+      <Navbar onNavigate={onNavigate} showLoginModal={showLoginModal} setShowLoginModal={setShowLoginModal} currentPage={currentPage} setCurrentPage={setCurrentPage} currentRoute={currentRoute} setRoute={setRoute} />
       <div className="pt-24">
       {/* Enhanced Background Design */}
       <div className="absolute inset-8 overflow-hidden">
@@ -210,10 +215,10 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
                     price: 24.99,
                     image: 'https://images.unsplash.com/photo-1559737558-2f6a276dce3a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
                   })}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
-                  disabled={loading}
+                  className={`px-4 py-2 rounded-md transition duration-300 ${addedIds['salmon-001'] ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                  disabled={loading || addedIds['salmon-001']}
                 >
-                  {loading ? 'Adding...' : 'Add to Cart'}
+                  {addedIds['salmon-001'] ? 'Added!' : (loading ? 'Adding...' : 'Add to Cart')}
                 </button>
               </div>
             </div>
@@ -238,10 +243,10 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
                     price: 38.99,
                     image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
                   })}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
-                  disabled={loading}
+                  className={`px-4 py-2 rounded-md transition duration-300 ${addedIds['lobster-001'] ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                  disabled={loading || addedIds['lobster-001']}
                 >
-                  {loading ? 'Adding...' : 'Add to Cart'}
+                  {addedIds['lobster-001'] ? 'Added!' : (loading ? 'Adding...' : 'Add to Cart')}
                 </button>
               </div>
             </div>
@@ -266,10 +271,10 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
                     price: 22.99,
                     image: 'https://images.unsplash.com/photo-1580745830016-5e7cb8f63b19?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
                   })}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
-                  disabled={loading}
+                  className={`px-4 py-2 rounded-md transition duration-300 ${addedIds['shrimp-001'] ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                  disabled={loading || addedIds['shrimp-001']}
                 >
-                  {loading ? 'Adding...' : 'Add to Cart'}
+                  {addedIds['shrimp-001'] ? 'Added!' : (loading ? 'Adding...' : 'Add to Cart')}
                 </button>
               </div>
             </div>
@@ -294,10 +299,10 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
                     price: 28.99,
                     image: 'https://images.unsplash.com/photo-1518843875459-f738682238a6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
                   })}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
-                  disabled={loading}
+                  className={`px-4 py-2 rounded-md transition duration-300 ${addedIds['paella-001'] ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                  disabled={loading || addedIds['paella-001']}
                 >
-                  {loading ? 'Adding...' : 'Add to Cart'}
+                  {addedIds['paella-001'] ? 'Added!' : (loading ? 'Adding...' : 'Add to Cart')}
                 </button>
               </div>
             </div>
@@ -322,10 +327,10 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
                     price: 26.99,
                     image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
                   })}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
-                  disabled={loading}
+                  className={`px-4 py-2 rounded-md transition duration-300 ${addedIds['tuna-001'] ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                  disabled={loading || addedIds['tuna-001']}
                 >
-                  {loading ? 'Adding...' : 'Add to Cart'}
+                  {addedIds['tuna-001'] ? 'Added!' : (loading ? 'Adding...' : 'Add to Cart')}
                 </button>
               </div>
             </div>
@@ -350,10 +355,10 @@ const Seafood = ({ onBack, showLoginModal, setShowLoginModal, currentPage, setCu
                     price: 18.99,
                     image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
                   })}
-                  className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition duration-300"
-                  disabled={loading}
+                  className={`px-4 py-2 rounded-md transition duration-300 ${addedIds['fish-chips-001'] ? 'bg-green-500 text-white' : 'bg-orange-500 text-white hover:bg-orange-600'}`}
+                  disabled={loading || addedIds['fish-chips-001']}
                 >
-                  {loading ? 'Adding...' : 'Add to Cart'}
+                  {addedIds['fish-chips-001'] ? 'Added!' : (loading ? 'Adding...' : 'Add to Cart')}
                 </button>
               </div>
             </div>

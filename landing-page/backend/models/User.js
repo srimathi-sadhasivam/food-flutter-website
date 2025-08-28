@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   phoneNumber: {
@@ -26,6 +27,12 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+    index: true
+  },
   address: {
     type: String,
     required: false,
@@ -42,8 +49,12 @@ const userSchema = new mongoose.Schema({
 });
 
 // Update the updatedAt field before saving
-userSchema.pre('save', function(next) {
+userSchema.pre('save', async function(next) {
   this.updatedAt = Date.now();
+  if (this.isModified('password')) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
   next();
 });
 

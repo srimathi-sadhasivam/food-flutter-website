@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 
-const Contact = ({ currentPage, setCurrentPage, currentRoute, setRoute, showLoginModal, setShowLoginModal }) => {
+const Contact = ({ onNavigate, currentPage, setCurrentPage, currentRoute, setRoute, showLoginModal, setShowLoginModal }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -38,7 +38,7 @@ const Contact = ({ currentPage, setCurrentPage, currentRoute, setRoute, showLogi
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <Navbar 
-        onNavigate={setRoute} 
+        onNavigate={onNavigate} 
         showLoginModal={showLoginModal} 
         setShowLoginModal={setShowLoginModal} 
         currentPage={currentPage} 

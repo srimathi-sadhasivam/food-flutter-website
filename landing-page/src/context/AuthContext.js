@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { decodeJwt } from '../utils/jwt';
 
 const AuthContext = createContext();
 
@@ -15,12 +16,18 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [onLoginSuccess, setOnLoginSuccess] = useState(null);
+  const [adminToken, setAdminToken] = useState(null);
+  const [token, setToken] = useState(null);
+  const [role, setRole] = useState('guest');
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3017/api';
 
   // Load user from localStorage on app start
   useEffect(() => {
     const savedUser = localStorage.getItem('wellfood_user');
+    const savedAdminToken = localStorage.getItem('wellfood_admin_token');
+    const savedToken = localStorage.getItem('wellfood_token');
+    const savedRole = localStorage.getItem('wellfood_role');
     if (savedUser) {
       try {
         const userData = JSON.parse(savedUser);
@@ -31,40 +38,91 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('wellfood_user');
       }
     }
+    if (savedAdminToken) {
+      setAdminToken(savedAdminToken);
+    }
+    if (savedToken) {
+      setToken(savedToken);
+      const decoded = decodeJwt(savedToken);
+      if (decoded?.role) setRole(decoded.role);
+    }
+    if (savedRole) setRole(savedRole);
     setLoading(false);
   }, []);
 
   // Login user
   const login = async (email, password) => {
     try {
+      // Try admin login first
+      const adminRes = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const adminData = await adminRes.json();
+      if (adminData?.success && adminData?.token) {
+        localStorage.setItem('wellfood_admin_token', adminData.token);
+        localStorage.setItem('wellfood_token', adminData.token); // Store as regular token too
+        setAdminToken(adminData.token);
+        setToken(adminData.token);
+        localStorage.setItem('wellfood_role', 'admin');
+        setRole('admin');
+        setUser(adminData.user || { role: 'admin', email });
+        setIsAuthenticated(true);
+        localStorage.setItem('wellfood_user', JSON.stringify(adminData.user || { role: 'admin', email }));
+        if (onLoginSuccess) onLoginSuccess(`Welcome back, Admin!`, 'success');
+        return { success: true, role: 'admin', user: adminData.user };
+      }
+
+      // Fallback to normal user login
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
 
       if (data.success) {
+        localStorage.setItem('wellfood_token', data.token);
+        localStorage.setItem('wellfood_role', data.user.role || 'user');
+        setToken(data.token);
+        setRole(data.user.role || 'user');
         setUser(data.user);
         setIsAuthenticated(true);
         localStorage.setItem('wellfood_user', JSON.stringify(data.user));
-        
-        // Trigger success toast (only if callback exists)
-        if (onLoginSuccess) {
-          onLoginSuccess(`Welcome back, ${data.user.name}!`, 'success');
-        }
-        
-        return { success: true, user: data.user };
-      } else {
-        return { success: false, message: data.message };
+        if (onLoginSuccess) onLoginSuccess(`Welcome back, ${data.user.name}!`, 'success');
+        return { success: true, role: data.user.role || 'user', user: data.user };
       }
+      return { success: false, message: data.message };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, message: 'Login failed. Please try again.' };
     }
+  };
+
+  // Admin login
+  const adminLogin = async (email, password) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await response.json();
+      if (data.success && data.token) {
+        localStorage.setItem('wellfood_admin_token', data.token);
+        setAdminToken(data.token);
+        return { success: true };
+      }
+      return { success: false, message: data.message || 'Invalid credentials' };
+    } catch (error) {
+      return { success: false, message: 'Login failed. Please try again.' };
+    }
+  };
+
+  const adminLogout = () => {
+    localStorage.removeItem('wellfood_admin_token');
+    setAdminToken(null);
   };
 
   // Send OTP to phone number
@@ -185,6 +243,9 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     isAuthenticated,
+    adminToken,
+    token,
+    role,
     sendOTP,
     verifyOTP,
     completeProfile,
@@ -193,6 +254,9 @@ export const AuthProvider = ({ children }) => {
     logout,
     getUserProfile,
     setOnLoginSuccess,
+    adminLogin,
+    adminLogout,
+    API_BASE_URL,
   };
 
   return (
